@@ -62,7 +62,7 @@ const SignupButton = styled(Button)`
   box-shadow: 0 2px 4px 0 rgb(0 0 0 / 20%);
 `;
 
-const Login = () => {
+const Login = ({ isUserAuthenticated }) => {
   const [account, toggleAccount] = useState("login");
 
   const [logindata, setLoginData] = useState({
@@ -106,7 +106,9 @@ const Login = () => {
         setAccount({ username:response.data.username, name:response.data.name});
         sessionStorage.setItem('accessToken',`Bearer ${response.data.accessToken}`);
         sessionStorage.setItem('refreshToken',`Bearer ${response.data.refreshToken}`);
-        navigate('/home');
+
+        isUserAuthenticated(true);
+        navigate('/');
       } else {
         setError("Something went wrong please try again later!!");
       }
