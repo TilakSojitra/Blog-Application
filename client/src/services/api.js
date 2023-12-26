@@ -1,15 +1,19 @@
 import axios from "axios";
 import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
+import { getAccessToken } from "../utils/common-util";
+
 
 const API_URL = 'http://localhost:8000';
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    timeout:10000,
+    timeout:600000,
     headers:{
-        'Content-Type' :'application/json'
+        "Accept": "application/json, multipart/form-data", 
+        "Content-Type" : "application/json",
     },
 })
+
 
 axiosInstance.interceptors.request.use(
     function(config) {
@@ -104,9 +108,9 @@ for (const [key, value] of Object.entries(SERVICE_URLS)) {
       url: value.url,
       data: value.method === "DELETE" ? "" : body,
       responseType: value.responseType,
-    //   headers: {
-    //     authorization: getAccessToken(),
-    //   },
+      headers: {
+        authorization: getAccessToken(),
+      },
     //   TYPE: getType(value, body),
       onUploadProgress: function (progressEvent) {
         if (showUploadProgress) {
