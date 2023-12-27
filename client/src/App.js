@@ -12,6 +12,8 @@ import Login from "./Components/account/login";
 import Home from "./Components/Home/home";
 import Header from "./Components/header/header";
 import CreatePost from "./Components/create/createpost";
+import DetailView from "./Components/details/Details";
+import Update from "./Components/create/update";
 
 const PrivateRoute = ({ isauthenticated, ...props }) => {
   return isauthenticated ? (
@@ -35,18 +37,35 @@ const App = () => {
             path="/login"
             element={<Login isUserAuthenticated={isUserAuthenticated} />}
           />
+
           <Route
             path="/"
             element={<PrivateRoute isauthenticated={isauthenticated} />}
           >
             <Route exact path="/" element={<Home />} />
           </Route>
+
           <Route
             path="/create"
             element={<PrivateRoute isauthenticated={isauthenticated} />}
           >
             <Route exact path="/create" element={<CreatePost />} />
           </Route>
+
+          <Route
+            path="/details/:id"
+            element={<PrivateRoute isauthenticated={isauthenticated} />}
+          >
+            <Route exact path="/details/:id" element={<DetailView />} />
+          </Route>
+
+          <Route
+            path="/update/:id"
+            element={<PrivateRoute isauthenticated={isauthenticated} />}
+          >
+            <Route exact path="/update/:id" element={<Update />} />
+          </Route>
+
         </Routes>
       </BrowserRouter>
     </DataProvider>

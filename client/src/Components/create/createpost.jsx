@@ -87,7 +87,8 @@ const CreatePost = () => {
             }
         }
         getImage();
-        setPost({...post , categories : location.search?.split('=')[1] || 'All'})
+        // console.log(location.search?.split('=')[1] || 'All');
+        post.categories = location.search?.split('=')[1] || 'All';
         setPost({...post , username : account.username});
     },[file])
 

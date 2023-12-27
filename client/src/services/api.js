@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
-import { getAccessToken } from "../utils/common-util";
+import { getAccessToken,getType } from "../utils/common-util";
 
 
 const API_URL = 'http://localhost:8000';
@@ -17,6 +17,11 @@ const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
     function(config) {
+        if(config.TYPE.params){
+            config.params = config.TYPE.params;
+        }else if(config.TYPE.query){
+            config.url = config.url +'/' + config.TYPE.query;
+        }
         return config;
     },
     function(error) {
@@ -111,7 +116,7 @@ for (const [key, value] of Object.entries(SERVICE_URLS)) {
       headers: {
         authorization: getAccessToken(),
       },
-    //   TYPE: getType(value, body),
+      TYPE: getType(value, body),
       onUploadProgress: function (progressEvent) {
         if (showUploadProgress) {
           let percentCompleted = Math.round(
