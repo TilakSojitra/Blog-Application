@@ -16,7 +16,7 @@ const Posts = () => {
         const fetchData = async () => {
             try {
                 let response = await API.getAllPosts({ category: category || ''});
-                console.log(response);
+                // console.log(response);
                 if (response.isSuccess) {
                     setPosts(response.data);
                 }
@@ -30,7 +30,7 @@ const Posts = () => {
     
     return (
         <>
-            {posts && posts.length > 0 ? posts.map(post => (
+            {posts && posts.length > 0 ? posts.map((post,index) => (
                 <Grid item lg={3} sm={4} xs={12}>
                     <Link style={{ textDecoration: 'none', color: 'inherit' }} to={`details/${post._id}`}>
                         <Post post={post} />

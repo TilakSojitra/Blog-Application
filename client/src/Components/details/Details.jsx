@@ -8,6 +8,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { DataContext } from '../../context/DataProvider';
 import { API } from '../../services/api';
+import Comments from './comments/comments';
 
 const Container = styled(Box)(({ theme }) => ({
     margin: '50px 100px',
@@ -112,6 +113,8 @@ const DetailView = () => {
             </Author>
 
             <Typography>{post.description}</Typography>
+
+            <Comments post={post} />
         </Container>
     )
 }
