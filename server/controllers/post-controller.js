@@ -41,3 +41,36 @@ export const getPost = async (request,response) => {
     }
 }
 
+export const updatePost = async (request,response) => {
+    try{
+        const p = await post.findById(request.params.id);
+
+        if(!p){
+            return response.status(404).json({ msg: 'post not found'});
+        }
+
+        await post.findByIdAndUpdate(request.params.id,{ $set: request.body});
+
+        return response.status(200).json({msg: 'post updated successfully'});
+    }
+    catch(error){
+        return response.status(500).json(error);
+    }
+}
+
+export const deletePost = async (request,response) => {
+    try{
+        const p = await post.findById(request.params.id);
+
+        if(!p){
+            return response.status(404).json({ msg: 'post not found'});
+        }
+
+        await post.findByIdAndDelete(p._id);
+
+        return response.status(200).json({msg: 'post deleted successfully'});
+    }
+    catch(error){
+        return response.status(500).json(error);
+    }
+}

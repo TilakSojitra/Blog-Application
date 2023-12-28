@@ -1,7 +1,7 @@
 import express from "express";
 import { loginUser, signupUser } from "../controllers/user-controller.js";
 import { uploadImage,getImage } from "../controllers/image-controller.js";
-import { createPost, getAllPost, getPost } from "../controllers/post-controller.js";
+import { createPost, getAllPost, getPost,updatePost,deletePost } from "../controllers/post-controller.js";
 import { authenticateToken } from "../controllers/jwt-controller.js";
 import upload from "../utils/upload.js";
 
@@ -15,6 +15,9 @@ router.get('/file/:filename',getImage);
 router.post('/create',authenticateToken, createPost);
 router.get('/posts',authenticateToken, getAllPost);
 router.get('/post/:id',authenticateToken, getPost);
+
+router.put('/update/:id',authenticateToken, updatePost);
+router.delete('/delete/:id',authenticateToken, deletePost);
 
 export default router;
 
