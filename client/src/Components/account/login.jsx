@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 
-import { TextField, Box, Button, Typography, styled } from "@mui/material";
+import { TextField, Box, Button, Typography, styled, Stack, Grid } from "@mui/material";
+import Snackbar from '@mui/material/Snackbar';
 import { API } from "../../services/api";
 import { DataContext } from "../../context/DataProvider";
 import { useNavigate } from "react-router-dom";
+import MuiAlert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';  
+import Backdrop from '@mui/material/Backdrop';
+var passwordValidator = require('password-validator');
 
 
 const Component = styled(Box)`
@@ -65,6 +70,31 @@ const SignupButton = styled(Button)`
 const Login = ({ isUserAuthenticated }) => {
   const [account, toggleAccount] = useState("login");
 
+  const [msg, setMsg] = useState("");
+
+  const [open, setOpen] = useState(false);
+  const [severity, setSeverity] = useState("error");
+
+  const handleClick = () => {
+    setOpen(true);
+  };
+
+  const handleClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
+  const [lopen, setlOpen] = React.useState(false);
+  const handlelClose = () => {
+    setlOpen(false);
+  };
+  const handlelOpen = () => {
+    setlOpen(true);
+  };
+
   const [logindata, setLoginData] = useState({
     username: "",
     password: "",
@@ -75,6 +105,15 @@ const Login = ({ isUserAuthenticated }) => {
     username: "",
     password: "",
   });
+
+  var schema = new passwordValidator();
+  schema
+    .is().min(8)                                    // Minimum length 8
+    .is().max(100)                                  // Maximum length 100
+    .has().uppercase()                              // Must have uppercase letters
+    .has().lowercase()                              // Must have lowercase letters
+    .has().digits(2)                                // Must have at least 2 digits
+    .has().not().spaces();
 
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -97,123 +136,182 @@ const Login = ({ isUserAuthenticated }) => {
     account === "signup" ? toggleAccount("login") : toggleAccount("signup");
   };
 
+
+
   const loginUser = async () => {
     try {
       let response = await API.userLogin(logindata);
       if (response.isSuccess) {
-        setError("");
-
-        setAccount({ username:response.data.username, name:response.data.name});
-        sessionStorage.setItem('accessToken',`Bearer ${response.data.accessToken}`);
-        sessionStorage.setItem('refreshToken',`Bearer ${response.data.refreshToken}`);
+        
+        setAccount({ username: response.data.username, name: response.data.name });
+        
+        sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
+        sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
+        
+        handlelOpen();
+        setMsg("Login successful!! You will be redirected to home page soon!!");
+        setSeverity("success");
+        handleClick();
 
         isUserAuthenticated(true);
-        navigate('/');
+        setTimeout(() => {
+          handlelClose();
+          navigate('/');
+        }, 2000);
       } else {
         setError("Something went wrong please try again later!!");
       }
     } catch (error) {
-      setError("Something went wrong please try again later!!");
-      setTimeout(() => {
-        setError("");
-      }, 5000);
+      // if(response.sta)
+      // setMsg()
+      setMsg(error.response.data.msg);
+      setSeverity("error");
+      handleClick();
+
     }
   };
 
   const signupUser = async () => {
     try {
-      let response = await API.userSignup(signupdata);
-      if (response.isSuccess) {
-        setError("");
-        setSignupData(signupdata);
-        toggleAccount("login");
-      } else {
-        setError("Something went wrong please try again later!!");
+      if (!schema.validate(signupdata.password)) {
+        setMsg('Password must contain atleast one uppercase character,one lowercase character, two digits and one special character, and minimum length of 8 (without containing space).');
+        setSeverity('warning');
+        handleClick();
+      }
+      else {
+
+        let exist = await API.existUser(signupdata.username);
+
+        // console.log(exist);
+        if (exist.data) {
+          setSeverity("error");
+          setMsg("Username already exist!!");
+          handleClick();
+        }
+        else {
+
+          let response = await API.userSignup(signupdata);
+          // console.log(response);
+          if (response.isSuccess) {
+
+
+            setSignupData(signupdata);
+            setSeverity("success");
+            setMsg(response.data.msg);
+
+            handleClick();
+            toggleAccount("login");
+          } else {
+            setMsg("Something went wrong please try again later!!")
+            setSeverity('error');
+            handleClick();
+          }
+        }
+
       }
     } catch (error) {
-      setError("Something went wrong please try again later!!");
-      setTimeout(() => {
-        setError("");
-      }, 5000);
-      // console.log(error);
+      setMsg(error.response.data.msg)
+      setSeverity('error');
+      handleClick();
     }
   };
 
+  const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+  });
+
+
   return (
-    <Component>
-      <Box style={{ marginTop: 50 }}>
-        <Image src={imageURL} alt="blog" />
-        {account === "login" ? (
-          <Wrapper>
-            <TextField
-              variant="standard"
-              onChange={(e) => onLoginInputChange(e)}
-              name="username"
-              value={logindata.username}
-              label="Enter Username"
-              required
-            />
-            <TextField
-              variant="standard"
-              onChange={(e) => onLoginInputChange(e)}
-              type="password"
-              name="password"
-              value={logindata.password}
-              label="Enter Password"
-              required
-            />
+    <>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={lopen}
+        onClick={handlelClose}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Stack spacing={2} sx={{ width: '50%' }}>
+        <Snackbar open={open} autoHideDuration={5000} onClose={handleClose}>
+          <Alert onClose={handleClose} severity={severity} sx={{ width: '100%' }}>
+            {msg}
+          </Alert>
+        </Snackbar>
+      </Stack>
+      <Component>
+        <Box style={{ marginTop: 50 }}>
+          <Image src={imageURL} alt="blog" />
+          {account === "login" ? (
+            <Wrapper>
+              <TextField
+                variant="standard"
+                onChange={(e) => onLoginInputChange(e)}
+                name="username"
+                value={logindata.username}
+                label="Enter Username"
+                required
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onLoginInputChange(e)}
+                type="password"
+                name="password"
+                value={logindata.password}
+                label="Enter Password"
+                required
+              />
 
-            {error && <Error>{error}</Error>}
+              {error && <Error>{error}</Error>}
 
-            <LoginButton variant="contained" onClick={() => loginUser()}>
-              Login
-            </LoginButton>
-            <Text style={{ textAlign: "center" }}>OR</Text>
-            <SignupButton type="submit" onClick={() => toggleSignup()}>
-              Create an account
-            </SignupButton>
-          </Wrapper>
-        ) : (
-          <Wrapper>
-            <TextField
-              variant="standard"
-              onChange={(e) => onSignupInputChange(e)}
-              name="name"
-              value={signupdata.name}
-              label="Enter Name"
-              required
-            />
-            <TextField
-              variant="standard"
-              onChange={(e) => onSignupInputChange(e)}
-              name="username"
-              value={signupdata.username}
-              label="Enter Username"
-              required
-            />
-            <TextField
-              variant="standard"
-              onChange={(e) => onSignupInputChange(e)}
-              type="password"
-              name="password"
-              value={signupdata.password}
-              label="Enter Password"
-              required
-            />
+              <LoginButton variant="contained" onClick={() => loginUser()}>
+                Login
+              </LoginButton>
+              <Text style={{ textAlign: "center" }}>OR</Text>
+              <SignupButton type="submit" onClick={() => toggleSignup()}>
+                Create an account
+              </SignupButton>
+            </Wrapper>
+          ) : (
+            <Wrapper>
+              <TextField
+                variant="standard"
+                onChange={(e) => onSignupInputChange(e)}
+                name="name"
+                value={signupdata.name}
+                label="Enter Name"
+                required
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onSignupInputChange(e)}
+                name="username"
+                value={signupdata.username}
+                label="Enter Username"
+                required
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onSignupInputChange(e)}
+                type="password"
+                name="password"
+                value={signupdata.password}
+                label="Enter Password"
+                required
+              />
 
-            {error && <Error>{error}</Error>}
+              {error && <Error>{error}</Error>}
 
-            <SignupButton type="submit" onClick={() => signupUser()}>
-              Signup
-            </SignupButton>
-            <Text style={{ textAlign: "center" }}>OR</Text>
-            <LoginButton variant="contained" onClick={() => toggleSignup()}>
-              Already have an account
-            </LoginButton>
-          </Wrapper>
-        )}
-      </Box>
-    </Component>
+              <SignupButton type="submit" onClick={() => signupUser()}>
+                Signup
+              </SignupButton>
+              <Text style={{ textAlign: "center" }}>OR</Text>
+              <LoginButton variant="contained" onClick={() => toggleSignup()}>
+                Already have an account
+              </LoginButton>
+            </Wrapper>
+          )}
+        </Box>
+      </Component>
+    </>
   );
 };
 

@@ -6,7 +6,7 @@ export const createPost = async (request,response) => {
         const p = await new post(request.body);
         p.save();
 
-        return response.status(200).json('Post saved successfully');
+        return response.status(200).json('Post added successfully');
     }
     catch(error){
         return response.status(500).json(error); 
@@ -51,7 +51,7 @@ export const updatePost = async (request,response) => {
 
         await post.findByIdAndUpdate(request.params.id,{ $set: request.body});
 
-        return response.status(200).json({msg: 'post updated successfully'});
+        return response.status(200).json({msg: 'Post Updated successfully'});
     }
     catch(error){
         return response.status(500).json(error);
@@ -68,7 +68,7 @@ export const deletePost = async (request,response) => {
 
         await post.findByIdAndDelete(p._id);
 
-        return response.status(200).json({msg: 'post deleted successfully'});
+        return response.status(200).json({msg: 'Post deleted successfully'});
     }
     catch(error){
         return response.status(500).json(error);

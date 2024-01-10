@@ -1,5 +1,5 @@
 import express from "express";
-import { loginUser, signupUser } from "../controllers/user-controller.js";
+import { isUserExist, loginUser, signupUser } from "../controllers/user-controller.js";
 import { uploadImage,getImage } from "../controllers/image-controller.js";
 import { createPost, getAllPost, getPost,updatePost,deletePost } from "../controllers/post-controller.js";
 import { addComment, getCommentsByPostId,deleteComment } from "../controllers/comment-controller.js";
@@ -10,6 +10,8 @@ const router = express.Router();
 
 router.post('/signup',signupUser);
 router.post('/login',loginUser);
+router.get('/checkuser/:username',isUserExist);
+
 
 router.post('/file/upload',upload.single('file'),uploadImage);
 router.get('/file/:filename',getImage);

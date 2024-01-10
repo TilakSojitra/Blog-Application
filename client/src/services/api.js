@@ -1,42 +1,42 @@
 import axios from "axios";
-import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
-import { getAccessToken,getType } from "../utils/common-util";
+import { SERVICE_URLS } from '../constants/config';
+import { getAccessToken, getType } from "../utils/common-util";
 
 
 const API_URL = 'http://localhost:8000';
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
-    timeout:600000,
-    headers:{
-        "Accept": "application/json, multipart/form-data", 
-        "Content-Type" : "application/json",
+    timeout: 600000,
+    headers: {
+        "Accept": "application/json, multipart/form-data",
+        "Content-Type": "application/json",
     },
 })
 
 
 axiosInstance.interceptors.request.use(
-    function(config) {
-        if(config.TYPE.params){
+    function (config) {
+        if (config.TYPE.params) {
             config.params = config.TYPE.params;
-        }else if(config.TYPE.query){
-            config.url = config.url +'/' + config.TYPE.query;
+        } else if (config.TYPE.query) {
+            config.url = config.url + '/' + config.TYPE.query;
         }
         return config;
     },
-    function(error) {
+    function (error) {
         return Promise.reject(error);
     }
 );
 
 axiosInstance.interceptors.response.use(
-    function(response) {
+    function (response) {
         // Stop global loader here
         return processResponse(response);
     },
-    function(error) {
+    function (error) {
         // Stop global loader here
-        return Promise.reject(ProcessError(error));
+        throw error;
     }
 )
 
@@ -54,86 +54,36 @@ const processResponse = (response) => {
     }
 }
 
-
-const ProcessError = async (error) => {
-    if (error.response) {
-       
-        // if (error.response?.status === 403) {
-        //     // const { url, config } = error.response;
-        //     // console.log(error);
-        //     // try {
-        //     //     let response = await API.getRefreshToken({ token: getRefreshToken() });
-        //     //     if (response.isSuccess) {
-        //             sessionStorage.clear();
-        //     //         setAccessToken(response.data.accessToken);
-
-        //     //         const requestData = error.toJSON();
-
-        //     //         let response1 = await axios({
-        //     //             method: requestData.config.method,
-        //     //             url: requestData.config.baseURL + requestData.config.url,
-        //     //             headers: { "content-type": "application/json", "authorization": getAccessToken() },
-        //     //             params: requestData.config.params
-        //     //         });
-        //     //     }
-        //     // } catch (error) {
-        //     //     return Promise.reject(error)
-        //     // }
-        // } else {
-            console.log("ERROR IN RESPONSE: ", error.toJSON());
-            return {
-                isError: true,
-                msg: API_NOTIFICATION_MESSAGES.responseFailure,
-                code: error.response.status
-            }
-        // }
-    } else if (error.request) { 
-        console.log("ERROR IN RESPONSE: ",JSON.stringify(error));
-        return {
-            isError: true,
-            msg: API_NOTIFICATION_MESSAGES.requestFailure,
-            code: ""
-        }
-    } else { 
-        console.log("ERROR IN RESPONSE: ",JSON.stringify(error));
-        return {
-            isError: true,
-            msg: API_NOTIFICATION_MESSAGES.networkError,
-            code: ""
-        }
-    }
-}
-
 const API = {};
 
 for (const [key, value] of Object.entries(SERVICE_URLS)) {
-  API[key] = (body, showUploadProgress, showDownloadProgress) =>
-    axiosInstance({
-      method: value.method,
-      url: value.url,
-      data: value.method === "DELETE" ? {} : body,
-      responseType: value.responseType,
-      headers: {
-        authorization: getAccessToken(),
-      },
-      TYPE: getType(value, body),
-      onUploadProgress: function (progressEvent) {
-        if (showUploadProgress) {
-          let percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          showUploadProgress(percentCompleted);
-        }
-      },
-      onDownloadProgress: function (progressEvent) {
-        if (showDownloadProgress) {
-          let percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          showDownloadProgress(percentCompleted);
-        }
-      },
-    });
+    API[key] = (body, showUploadProgress, showDownloadProgress) =>
+        axiosInstance({
+            method: value.method,
+            url: value.url,
+            data: value.method === "DELETE" ? {} : body,
+            responseType: value.responseType,
+            headers: {
+                authorization: getAccessToken(),
+            },
+            TYPE: getType(value, body),
+            onUploadProgress: function (progressEvent) {
+                if (showUploadProgress) {
+                    let percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    showUploadProgress(percentCompleted);
+                }
+            },
+            onDownloadProgress: function (progressEvent) {
+                if (showDownloadProgress) {
+                    let percentCompleted = Math.round(
+                        (progressEvent.loaded * 100) / progressEvent.total
+                    );
+                    showDownloadProgress(percentCompleted);
+                }
+            },
+        });
 }
 
 export { API };
