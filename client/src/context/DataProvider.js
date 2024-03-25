@@ -6,7 +6,8 @@ export const DataProvider = ({ children}) => {
     
     const [account,setAccount] = useState({
         username:'',
-        name:''
+        name:'',
+        email:''
     });
     return (
         <DataContext.Provider value={{

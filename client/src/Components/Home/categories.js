@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { categories } from "../../constants/data";
 import { Button, Table, TableHead, TableRow, TableCell, TableBody, styled } from '@mui/material';
 
@@ -21,12 +21,9 @@ const StyledLink = styled(Link)`
 
 const Categories = () => {
 
-  const [searchParams,setSearchParams] = useSearchParams();
-  const category = searchParams.get('category');
-
   return (
     <>
-      <Link to={`/create?category=${category || ''}`} style={{ textDecoration: "none" }}>
+      <Link to={`/create`} style={{ textDecoration: "none" }}>
         <StyledButton variant="contained" >Create Blog</StyledButton>
       </Link>
       <StyledTable>

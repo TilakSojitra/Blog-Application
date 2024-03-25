@@ -16,6 +16,8 @@ import DetailView from "./Components/details/Details";
 import Update from "./Components/create/update";
 import About from "./Components/about/about";
 import Contact from "./Components/contact/contact";
+import VerifyEmail from "./Components/account/verifyemail";
+import Profile from "./Components/account/profile";
 
 const PrivateRoute = ({ isauthenticated, ...props }) => {
   return isauthenticated ? (
@@ -30,6 +32,7 @@ const PrivateRoute = ({ isauthenticated, ...props }) => {
 
 const App = () => {
   const [isauthenticated, isUserAuthenticated] = useState(false);
+  
   return (
     <DataProvider>
       <BrowserRouter>
@@ -39,12 +42,24 @@ const App = () => {
             path="/login"
             element={<Login isUserAuthenticated={isUserAuthenticated} />}
           />
+          <Route
+            exact
+            path="/verifyemail"
+            element={<VerifyEmail />}
+          />
 
           <Route
             path="/"
             element={<PrivateRoute isauthenticated={isauthenticated} />}
           >
             <Route exact path="/" element={<Home />} />
+          </Route>
+
+          <Route
+            path="/profile"
+            element={<PrivateRoute isauthenticated={isauthenticated} />}
+          >
+            <Route exact path="/profile" element={<Profile />} />
           </Route>
 
           <Route

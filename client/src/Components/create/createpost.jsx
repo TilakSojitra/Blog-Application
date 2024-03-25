@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 
 import {
     styled,
@@ -9,14 +9,16 @@ import {
     FormControl,
     Stack,
     Snackbar,
+    Typography
 } from "@mui/material";
 import { AddCircle as Add } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
 import MuiAlert from '@mui/material/Alert';
 import { API } from "../../services/api";
 import Backdrop from '@mui/material/Backdrop';
-import CircularProgress from '@mui/material/CircularProgress'; 
+import CircularProgress from '@mui/material/CircularProgress';
 import { DataContext } from "../../context/DataProvider";
+import { categories } from "../../constants/data";
 
 const Container = styled(Box)(({ theme }) => ({
     margin: "50px 100px",
@@ -59,14 +61,14 @@ const CreatePost = () => {
         description: "",
         picture: "",
         username: "",
-        categories: "",
+        categories: [],
         createdDate: new Date(),
     });
 
     const [file, setFile] = useState('');
     const navigate = useNavigate();
-    const location = useLocation();
     const { account } = useContext(DataContext);
+    const [cats, setCats] = useState([]);
 
     const url = post.picture ? post.picture : 'https://images.unsplash.com/photo-1543128639-4cb7e6eeef1b?ixid=MnwxMjA3fDB8MHxzZWFyY2h8Mnx8bGFwdG9wJTIwc2V0dXB8ZW58MHx8MHx8&ixlib=rb-1.2.1&w=1000&q=80';
 
@@ -95,6 +97,23 @@ const CreatePost = () => {
         setlOpen(true);
     };
 
+    const handleMultipleSelect = useCallback(
+        (e) => {
+            const selectedCats = Array.from(e.target.selectedOptions).map((o) => o.value);
+
+            if (selectedCats.length > 1) {
+                setCats(selectedCats);
+            }
+        },
+        [setCats],
+    );
+
+    const handleCatSelect = useCallback((cat) => {
+        setCats((prev) =>
+            prev.includes(cat) ? prev.filter((c) => c !== cat) : [...prev, cat],
+        );
+    }, []);
+
     useEffect(() => {
         const getImage = async () => {
             try {
@@ -117,7 +136,6 @@ const CreatePost = () => {
         }
         getImage();
         // console.log(location.search?.split('=')[1] || 'All');
-        post.categories = location.search?.split('=')[1] || 'All';
         setPost({ ...post, username: account.username });
     }, [file])
 
@@ -129,6 +147,11 @@ const CreatePost = () => {
     const savePost = async () => {
         try {
             // console.log(post);
+            // console.log(cats);
+            if(cats.length > 0)
+                post.categories = cats
+            else 
+                post.categories = ['All']
             let response = await API.createPost(post);
             if (response.isSuccess) {
                 // console.log(response);
@@ -173,7 +196,22 @@ const CreatePost = () => {
             </Stack>
             <Container>
                 <Image src={url} alt="post" />
-
+                <Typography variant="h5" style={{ textAlign: "center" }} color="text.secondary" >Select Categories</Typography>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <select
+                        multiple
+                        onChange={handleMultipleSelect}
+                        style={{ marginTop:"5px", paddingTop: "5px",
+                            width: "100px", height: "100px", overflow: "hidden", textAlign: "center" }}
+                        value={cats}
+                    >
+                        {categories.map((cat) => (
+                            <option key={cat.id} onClick={() => handleCatSelect(cat.type)} value={cat.type}>
+                                {cat.type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <StyledFormControl>
                     <label htmlFor="fileInput">
                         <Add fontSize="large" color="action" />

@@ -91,7 +91,7 @@ const Comments = ({ post }) => {
             }
         }
         fetchComments();
-    }, [post, toggle]);
+    }, [navigate, post, toggle]);
 
     const handleChange = (e) => {
         setComment({

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useContext } from "react";
 
-import { TextField, Box, Button, Typography, styled, Stack, Grid } from "@mui/material";
+import { TextField, Box, Button, Typography, styled, Stack } from "@mui/material";
 import Snackbar from '@mui/material/Snackbar';
 import { API } from "../../services/api";
 import { DataContext } from "../../context/DataProvider";
@@ -9,6 +9,7 @@ import MuiAlert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';  
 import Backdrop from '@mui/material/Backdrop';
 var passwordValidator = require('password-validator');
+var emailValidator = require('email-validator');
 
 
 const Component = styled(Box)`
@@ -96,12 +97,13 @@ const Login = ({ isUserAuthenticated }) => {
   };
 
   const [logindata, setLoginData] = useState({
-    username: "",
     password: "",
+    email: "",
   });
 
   const [signupdata, setSignupData] = useState({
     name: "",
+    email: "",
     username: "",
     password: "",
   });
@@ -142,22 +144,31 @@ const Login = ({ isUserAuthenticated }) => {
     try {
       let response = await API.userLogin(logindata);
       if (response.isSuccess) {
+        setAccount({ username: response.data.username, name: response.data.name, email:response.data.email });
         
-        setAccount({ username: response.data.username, name: response.data.name });
+        if(!response.data.isVerified){
+          setlOpen(true)
+          await API.getVerificationToken({ email: response.data.email})
+          setlOpen(false)
+          setMsg("Your email is not verified, kindly check your mail and verify your email!!")
+          setSeverity("warning")
+          handleClick()
+        }
+        else{
+          sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
+          
+          handlelOpen();
+          setMsg("Login successful!! You will be redirected to home page soon!!");
+          setSeverity("success");
+          handleClick();
+  
+          isUserAuthenticated(true);
+          setTimeout(() => {
+            handlelClose();
+            navigate('/');
+          }, 2000);
         
-        sessionStorage.setItem('accessToken', `Bearer ${response.data.accessToken}`);
-        sessionStorage.setItem('refreshToken', `Bearer ${response.data.refreshToken}`);
-        
-        handlelOpen();
-        setMsg("Login successful!! You will be redirected to home page soon!!");
-        setSeverity("success");
-        handleClick();
-
-        isUserAuthenticated(true);
-        setTimeout(() => {
-          handlelClose();
-          navigate('/');
-        }, 2000);
+        }
       } else {
         setError("Something went wrong please try again later!!");
       }
@@ -173,19 +184,24 @@ const Login = ({ isUserAuthenticated }) => {
 
   const signupUser = async () => {
     try {
-      if (!schema.validate(signupdata.password)) {
+      if(!emailValidator.validate(signupdata.email)){
+        setMsg('Email must be an email.');
+        setSeverity('warning');
+        handleClick();
+      }
+      else if (!schema.validate(signupdata.password)) {
         setMsg('Password must contain atleast one uppercase character,one lowercase character, two digits and one special character, and minimum length of 8 (without containing space).');
         setSeverity('warning');
         handleClick();
       }
       else {
 
-        let exist = await API.existUser(signupdata.username);
+        let emailExist = await API.existEmail(signupdata.email);
+        let userNameExist = await API.existUser(signupdata.username);
 
-        // console.log(exist);
-        if (exist.data) {
+        if (userNameExist.data || emailExist.data) {
           setSeverity("error");
-          setMsg("Username already exist!!");
+          setMsg("Username or email already exist!!");
           handleClick();
         }
         else {
@@ -210,7 +226,8 @@ const Login = ({ isUserAuthenticated }) => {
 
       }
     } catch (error) {
-      setMsg(error.response.data.msg)
+      // console.log("error", error);
+      setMsg(error.response?.data.msg)
       setSeverity('error');
       handleClick();
     }
@@ -245,9 +262,9 @@ const Login = ({ isUserAuthenticated }) => {
               <TextField
                 variant="standard"
                 onChange={(e) => onLoginInputChange(e)}
-                name="username"
-                value={logindata.username}
-                label="Enter Username"
+                name="email"
+                value={logindata.email}
+                label="Enter Email Address"
                 required
               />
               <TextField
@@ -286,6 +303,14 @@ const Login = ({ isUserAuthenticated }) => {
                 name="username"
                 value={signupdata.username}
                 label="Enter Username"
+                required
+              />
+              <TextField
+                variant="standard"
+                onChange={(e) => onSignupInputChange(e)}
+                name="email"
+                value={signupdata.email}
+                label="Enter Email Address"
                 required
               />
               <TextField

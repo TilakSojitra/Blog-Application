@@ -1,8 +1,5 @@
-import { AppBar, Toolbar, styled, Button } from '@mui/material'; 
+import { AppBar, Toolbar, styled } from '@mui/material'; 
 import { Link } from 'react-router-dom';
-
-import { useNavigate } from 'react-router-dom';
-
 
 const Component = styled(AppBar)`
     background: #efefef;
@@ -20,17 +17,14 @@ const Container = styled(Toolbar)`
 
 const Header = () => {
 
-    const navigate = useNavigate();
-
-    const logout = async () => navigate('/account');
-        
     return (
         <Component>
             <Container>
                 <Link to='/'>HOME</Link>
+                <Link to='/profile'>MY PROFILE</Link>
                 <Link to='/about'>ABOUT</Link>
                 <Link to='/contact'>CONTACT</Link>
-                <Link to='/login'>LOGOUT</Link>
+                <Link onClick={() => sessionStorage.clear()} to='/login'>LOGOUT</Link>
             </Container>
         </Component>
     )

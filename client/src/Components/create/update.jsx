@@ -117,7 +117,7 @@ const Update = () => {
             }
         }
         fetchData();
-    }, [])
+    }, [id, navigate])
 
     useEffect(() => {
         const getImage = async () => {
@@ -143,7 +143,7 @@ const Update = () => {
         // console.log(location.search?.split('=')[1] || 'All');
         post.categories = location.search?.split('=')[1] || 'All';
         setPost({ ...post, username: account.username });
-    }, [file])
+    }, [account.username, file, location.search, post])
 
 
     const handleChange = (e) => {

@@ -13,10 +13,10 @@ import {
 
 
 
-const Posts = () => {
+const Posts = ({ searchValue }) => {
     const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const category = searchParams.get('category');
 
     const [msg, setMsg] = useState("");
@@ -54,11 +54,10 @@ const Posts = () => {
                         navigate('/login');
                     }, 3000);
                 }
-                // console.log(error);
             }
         }
         fetchData();
-    }, [category])
+    }, [category, navigate])
 
     const Alert = React.forwardRef(function Alert(props, ref) {
         return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -74,12 +73,14 @@ const Posts = () => {
                 </Snackbar>
             </Stack>
             {posts && posts.length > 0 ?
+
                 posts.map((post, index) => (
-                    <Grid item key={index} lg={3} sm={4} xs={12}>
+                    (searchValue === '' || post.title.toLowerCase().startsWith(searchValue?.toLowerCase())) && <Grid item key={index} lg={3} sm={4} xs={12}>
                         <Link style={{ textDecoration: 'none', color: 'inherit' }} to={`details/${post._id}`}>
                             <Post key={index} post={post} />
                         </Link>
                     </Grid>
+
                 )) : <Box style={{ color: '878787', margin: '30px 80px', fontSize: 18 }}>
                     No data is available for selected category
                 </Box>
